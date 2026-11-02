@@ -119,3 +119,13 @@ label.f input,label.f select{margin-top:5px}
   .bottom a span{font-size:19px}.bottom a.on{color:#fff}
   .toast{bottom:90px}
 }
+.clk{cursor:pointer}.clk:hover{background:#f8faff}
+#modal{position:fixed;inset:0;background:rgba(15,29,58,.45);display:none;align-items:center;justify-content:center;z-index:30;padding:16px}
+#modal.on{display:flex}
+.mbox{background:#fff;border-radius:16px;padding:22px;width:100%;max-width:560px;max-height:88vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.mbox h3{font-size:17px;margin-bottom:12px}.mbox p{color:var(--muted);line-height:1.5}
+.editor{flex-basis:100%;background:#f7f9fd;border-radius:12px;padding:14px;margin-top:4px}
+.itm{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.addi{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1fr) auto;gap:8px;margin-top:10px}
+details .addi{grid-template-columns:repeat(4,minmax(0,1fr))}
+.selx{width:auto;max-width:100%;font-weight:600}
