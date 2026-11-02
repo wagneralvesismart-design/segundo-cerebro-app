@@ -1,0 +1,55 @@
+{
+  "mesociclo": 1,
+  "inicio": "2026-11-09",
+  "base_semana_a": "2026-11-09",
+  "semanas": {
+    "A": ["futebol", "supA", "infA", "push", "pull", "infB", "cardio"],
+    "B": ["supA", "futebol", "push", "infA", "pull", "infB", "cardio"]
+  },
+  "sessoes": {
+    "supA": { "nome": "Superiores A", "foco": "Força", "exercicios": [
+      { "nome": "Supino reto com barra", "series": 4, "reps": "5–8", "rir": "1–2", "grupo": "Peito", "alternativas": ["Supino reto com halteres", "Supino reto no smith", "Supino máquina", "Flexão de braço com carga"] },
+      { "nome": "Remada curvada com barra", "series": 4, "reps": "6–8", "rir": "1–2", "grupo": "Costas", "alternativas": ["Remada curvada com halteres", "Remada cavalinho (T-bar)", "Remada baixa na polia", "Remada no smith"] },
+      { "nome": "Desenvolvimento com halteres sentado", "series": 3, "reps": "6–10", "rir": "1–2", "grupo": "Ombros", "alternativas": ["Desenvolvimento com barra em pé", "Desenvolvimento máquina", "Desenvolvimento no smith", "Arnold press"] },
+      { "nome": "Barra fixa", "series": 3, "reps": "6–10", "rir": "1–2", "grupo": "Costas", "alternativas": ["Puxada frontal pegada aberta", "Barra fixa assistida", "Puxada unilateral na polia"] },
+      { "nome": "Elevação lateral com halteres", "series": 2, "reps": "12–20", "rir": "0–1", "grupo": "Ombros", "alternativas": ["Elevação lateral na polia", "Elevação lateral máquina"] },
+      { "nome": "Rosca direta com barra", "series": 2, "reps": "8–12", "rir": "0–1", "grupo": "Bíceps", "alternativas": ["Rosca direta com halteres", "Rosca W", "Rosca na polia"] },
+      { "nome": "Tríceps francês com halter", "series": 2, "reps": "8–12", "rir": "0–1", "grupo": "Tríceps", "alternativas": ["Tríceps testa com barra W", "Tríceps francês na polia"] }
+    ]},
+    "infA": { "nome": "Inferiores A", "foco": "Força · quadríceps", "exercicios": [
+      { "nome": "Agachamento livre", "series": 4, "reps": "5–8", "rir": "1–2", "grupo": "Quadríceps", "alternativas": ["Agachamento no smith", "Agachamento frontal", "Hack machine pesado"] },
+      { "nome": "Leg press 45°", "series": 3, "reps": "8–12", "rir": "1–2", "grupo": "Quadríceps", "alternativas": ["Leg press horizontal", "Hack machine", "Pendulum squat"] },
+      { "nome": "Stiff", "series": 3, "reps": "8–10", "rir": "1–2", "grupo": "Posterior", "alternativas": ["Terra romeno com halteres", "Good morning", "Stiff no smith"] },
+      { "nome": "Cadeira extensora", "series": 3, "reps": "10–15", "rir": "0–1", "grupo": "Quadríceps", "alternativas": ["Cadeira extensora unilateral", "Agachamento sissy"] },
+      { "nome": "Mesa flexora", "series": 2, "reps": "10–15", "rir": "0–1", "grupo": "Posterior", "alternativas": ["Flexora em pé unilateral", "Nordic curl"] },
+      { "nome": "Panturrilha em pé", "series": 4, "reps": "8–12", "rir": "0–1", "grupo": "Panturrilha", "alternativas": ["Panturrilha no leg press", "Panturrilha no smith", "Panturrilha unilateral com halter"] },
+      { "nome": "Abdominal com roda", "series": 3, "reps": "8–12", "rir": "—", "grupo": "Abdômen", "alternativas": ["Prancha", "Elevação de pernas na barra"] }
+    ]},
+    "push": { "nome": "Empurrar", "foco": "Hipertrofia", "exercicios": [
+      { "nome": "Supino inclinado com halteres", "series": 3, "reps": "8–12", "rir": "1–2", "grupo": "Peito", "alternativas": ["Supino inclinado com barra", "Supino inclinado no smith", "Supino inclinado máquina"] },
+      { "nome": "Supino máquina", "series": 3, "reps": "8–12", "rir": "1", "grupo": "Peito", "alternativas": ["Paralelas", "Supino declinado", "Supino reto com halteres"] },
+      { "nome": "Crucifixo na polia", "series": 3, "reps": "10–15", "rir": "0–1", "grupo": "Peito", "alternativas": ["Peck deck", "Crucifixo com halteres", "Crossover"] },
+      { "nome": "Elevação lateral na polia", "series": 4, "reps": "12–20", "rir": "0–1", "grupo": "Ombros", "alternativas": ["Elevação lateral com halteres", "Elevação lateral máquina"] },
+      { "nome": "Tríceps na polia com corda", "series": 3, "reps": "10–15", "rir": "0–1", "grupo": "Tríceps", "alternativas": ["Tríceps na polia com barra", "Tríceps coice na polia", "Mergulho no banco"] },
+      { "nome": "Tríceps overhead na polia", "series": 2, "reps": "10–15", "rir": "0–1", "grupo": "Tríceps", "alternativas": ["Tríceps francês com halter", "Tríceps testa com barra W"] }
+    ]},
+    "pull": { "nome": "Puxar", "foco": "Hipertrofia", "exercicios": [
+      { "nome": "Puxada frontal pegada neutra", "series": 3, "reps": "8–12", "rir": "1–2", "grupo": "Costas", "alternativas": ["Puxada frontal pegada aberta", "Barra fixa", "Puxada unilateral na polia"] },
+      { "nome": "Remada apoiada no peito", "series": 3, "reps": "8–12", "rir": "1–2", "grupo": "Costas", "alternativas": ["Remada cavalinho (T-bar)", "Remada máquina", "Remada baixa na polia"] },
+      { "nome": "Remada unilateral com halter", "series": 2, "reps": "10–12", "rir": "1", "grupo": "Costas", "alternativas": ["Remada unilateral na polia", "Remada unilateral máquina"] },
+      { "nome": "Pullover na polia", "series": 2, "reps": "12–15", "rir": "0–1", "grupo": "Costas", "alternativas": ["Pullover com halter", "Puxada com braços estendidos"] },
+      { "nome": "Face pull", "series": 3, "reps": "12–20", "rir": "0–1", "grupo": "Ombros", "alternativas": ["Crucifixo inverso com halteres", "Crucifixo inverso máquina"] },
+      { "nome": "Rosca inclinada com halteres", "series": 3, "reps": "8–12", "rir": "0–1", "grupo": "Bíceps", "alternativas": ["Rosca bayesian na polia", "Rosca alternada"] },
+      { "nome": "Rosca martelo", "series": 2, "reps": "10–15", "rir": "0–1", "grupo": "Bíceps", "alternativas": ["Rosca martelo na corda", "Rosca inversa"] },
+      { "nome": "Abdominal na polia", "series": 3, "reps": "10–15", "rir": "0–1", "grupo": "Abdômen", "alternativas": ["Abdominal infra", "Abdominal com roda", "Prancha"] }
+    ]},
+    "infB": { "nome": "Inferiores B", "foco": "Hipertrofia · posterior", "exercicios": [
+      { "nome": "Levantamento terra", "series": 3, "reps": "4–6", "rir": "2", "grupo": "Posterior", "alternativas": ["Terra com trap bar", "Terra romeno", "Rack pull"] },
+      { "nome": "Agachamento hack", "series": 3, "reps": "8–12", "rir": "1", "grupo": "Quadríceps", "alternativas": ["Agachamento no smith", "Leg press 45°", "Pendulum squat"] },
+      { "nome": "Agachamento búlgaro", "series": 2, "reps": "8–12", "rir": "1", "grupo": "Quadríceps", "alternativas": ["Afundo com halteres", "Passada", "Step-up"] },
+      { "nome": "Hip thrust", "series": 3, "reps": "8–12", "rir": "1", "grupo": "Glúteos", "alternativas": ["Hip thrust máquina", "Elevação pélvica no smith", "Glute bridge"] },
+      { "nome": "Flexora sentada", "series": 3, "reps": "10–15", "rir": "0–1", "grupo": "Posterior", "alternativas": ["Mesa flexora", "Flexora em pé unilateral"] },
+      { "nome": "Panturrilha sentada", "series": 3, "reps": "12–20", "rir": "0–1", "grupo": "Panturrilha", "alternativas": ["Panturrilha no leg press", "Panturrilha em pé"] }
+    ]}
+  }
+}

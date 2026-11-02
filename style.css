@@ -129,3 +129,9 @@ label.f input,label.f select{margin-top:5px}
 .addi{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1fr) auto;gap:8px;margin-top:10px}
 details .addi{grid-template-columns:repeat(4,minmax(0,1fr))}
 .selx{width:auto;max-width:100%;font-weight:600}
+body.auth .side,body.auth .bottom{display:none}
+body.auth .main{margin-left:0;display:flex;justify-content:center;padding-top:6vh}
+.auth-box{width:100%;max-width:420px;align-self:flex-start}
+.brand-auth{font-size:20px;font-weight:700;margin-bottom:8px}
+.cks{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.ck{display:flex;gap:8px;align-items:center;font-size:13px}.ck input{width:auto}

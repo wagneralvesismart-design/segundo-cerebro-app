@@ -164,7 +164,10 @@ function weekType(s) {
   return ((w % 2) + 2) % 2 === 0 ? 'A' : 'B';
 }
 const slotFor = s => S.m.prog.semanas[weekType(s)][(parseD(s).getDay() + 6) % 7];
-const slotNome = id => id === 'futebol' ? '⚽ Futebol' : id === 'cardio' ? 'Cardio Z2' : (S.m.prog.sessoes[id]?.nome || id);
+const slotNome = id => id === 'futebol' ? '⚽ Futebol' : id === 'cardio' ? 'Cardio Z2' : id === 'descanso' ? 'Descanso' : (S.m.prog.sessoes[id]?.nome || id);
+const metaSessoes = () => S.m.prog.semanas[weekType(TODAY)].filter(id => S.m.prog.sessoes[id]).length;
+const seriesPlano = () => S.m.prog.semanas[weekType(TODAY)].reduce((a, id) => a + (S.m.prog.sessoes[id]?.exercicios.reduce((b, e) => b + e.series, 0) || 0), 0);
+const semanasDiferentes = () => JSON.stringify(S.m.prog.semanas.A) !== JSON.stringify(S.m.prog.semanas.B);
 const diarioDe = d => S.m.diario.find(x => x.data === d);
 const sessoesSemana = () => { const mon = mondayOf(TODAY); return S.m.sessoes.filter(s => s.data >= mon && s.data <= addDays(mon, 6)); };
 
@@ -287,7 +290,7 @@ function renderInicio() {
   const auto = [
     m.prog.sessoes[slot]
       ? { txt: 'Treino: ' + slotNome(slot), ok: treinou, c: C.pri, w: 'academia', fn: () => treinou ? toast('Treino de hoje já registrado ✓') : irPara('Para concluir o treino, registre as séries na aba Treino. Ele é marcado aqui automaticamente ao salvar.', '#treino', 'Treino') }
-      : { txt: slotNome(slot), ok: false, c: C.green, w: 'hoje', fn: () => modal(`<h3>${slotNome(slot)}</h3><p>${slot === 'futebol' ? 'Dia de futebol: nada para registrar. Amanhã não há treino de inferiores.' : 'Cardio em Zona 2, de 30 a 60 min, no ritmo em que dá para conversar.'}</p>`) },
+      : { txt: slotNome(slot), ok: false, c: C.green, w: 'hoje', fn: () => modal(`<h3>${slotNome(slot)}</h3><p>${slot === 'futebol' ? 'Dia de futebol: nada para registrar. Amanhã não há treino de inferiores.' : slot === 'descanso' ? 'Dia de descanso: a recuperação também faz parte do treino.' : 'Cardio em Zona 2, de 30 a 60 min, no ritmo em que dá para conversar.'}</p>`) },
     { txt: `Refeições (${t.n}/${nRef})`, ok: t.n >= nRef, c: C.orange, w: 'dieta', fn: () => irPara('Para concluir, marque cada refeição na aba Dieta: seguiu o plano ou registre o que comeu.', '#dieta', 'Dieta') },
     ...sup.map(s => ({ txt: s.nome, ok: D.suplementos.includes(s.id), c: C.green, w: 'suplemento', fn: () => act(null, () => toggleSupl(s.id)) }))
   ];
@@ -307,7 +310,7 @@ function renderInicio() {
     <div class="card"><h3>Esta semana <small>${fmtD(mon)} – ${fmtD(sun)}</small></h3>
       <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
         <div style="position:relative;width:110px;height:110px"><canvas id="cSem"></canvas>
-          <div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center"><div><b style="font-size:20px">${semSess}/5</b><br><small class="muted">treinos</small></div></div></div>
+          <div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center"><div><b style="font-size:20px">${semSess}/${metaSessoes()}</b><br><small class="muted">treinos</small></div></div></div>
         <div style="flex:1;min-width:160px"><div class="small muted">Tarefas da semana</div><b style="font-size:20px">${semOk}/${semTot.length}</b>
           <div class="progress" style="margin-top:8px"><i style="width:${semTot.length ? semOk / semTot.length * 100 : 0}%;background:var(--green)"></i></div></div>
       </div>
@@ -326,7 +329,7 @@ function renderInicio() {
     <a class="card cat" href="#treino"><div class="head"><div class="t"><div class="ico b-blue">🏋</div>Treino</div><span class="tag t-blue">Semana ${weekType(TODAY)}</span></div>
       <div class="rows">
         <div><small>Hoje</small><b>${H(slotNome(slot))}</b><div class="small muted">${treinou ? '✓ concluído' : m.prog.sessoes[slot] ? m.prog.sessoes[slot].exercicios.length + ' exercícios' : ''}</div></div>
-        <div><small>Sessões na semana</small><b>${semSess} / 5</b></div>
+        <div><small>Sessões na semana</small><b>${semSess} / ${metaSessoes()}</b></div>
         <div><small>Peso</small><b>${num(m.peso)} kg</b></div>
         <div><small>Mesociclo</small><b>${m.prog.mesociclo}</b></div>
       </div><span class="go">→</span></a>
@@ -341,7 +344,7 @@ function renderInicio() {
     <div class="card cat off"><div class="head"><div class="t"><div class="ico b-purple">📚</div>Educação</div><span class="tag t-gray">em breve</span></div><p class="muted">Cursos, estudos e metas de aprendizado.</p></div>
     <div class="card cat off"><div class="head"><div class="t"><div class="ico b-teal">💼</div>Carreira</div><span class="tag t-gray">em breve</span></div><p class="muted">Desenvolvimento, renda extra e posts.</p></div>
   </div>`);
-  chart('cSem', { type: 'doughnut', data: { datasets: [{ data: [semSess, Math.max(0, 5 - semSess)], backgroundColor: [C.pri, C.grid], borderWidth: 0 }] }, options: { cutout: '75%', plugins: { legend: { display: false }, tooltip: { enabled: false } } } });
+  chart('cSem', { type: 'doughnut', data: { datasets: [{ data: [semSess, Math.max(0, metaSessoes() - semSess)], backgroundColor: [C.pri, C.grid], borderWidth: 0 }] }, options: { cutout: '75%', plugins: { legend: { display: false }, tooltip: { enabled: false } } } });
   document.querySelectorAll('[data-task]').forEach(el => el.onclick = () => act(null, () => toggleTask(S.m.tasks[+el.dataset.task]), 'Tarefa atualizada'));
   document.querySelectorAll('[data-auto]').forEach(el => el.onclick = () => auto[+el.dataset.auto].fn());
 }
@@ -450,7 +453,7 @@ function opcoesExercicio(e) {
 function treinoHoje() {
   const m = S.m, slot = slotFor(TODAY);
   if (!S.ui.semana) S.ui.semana = weekType(TODAY);
-  if (!S.ui.sessao) S.ui.sessao = m.prog.sessoes[slot] ? slot : 'supA';
+  if (!S.ui.sessao || !m.prog.sessoes[S.ui.sessao]) S.ui.sessao = m.prog.sessoes[slot] ? slot : Object.keys(m.prog.sessoes)[0];
   const sess = m.prog.sessoes[S.ui.sessao];
   const semS = sessoesSemana(), series = semS.reduce((a, s) => a + s.sets.length, 0);
   let draft = {}; try { draft = JSON.parse(localStorage.getItem(draftKey(S.ui.sessao)) || '{}'); } catch { }
@@ -462,15 +465,15 @@ function treinoHoje() {
   <div class="grid g4">
     ${kpi('⚖', 'b-blue', 'Peso', `${num(m.peso)} <span>kg</span>`, '<div class="spark"><canvas id="sp"></canvas></div>')}
     ${kpi('%', 'b-purple', 'Gordura', `${num(m.last('gordura_pct'))} <span>%</span>`, '<span class="tag t-blue">meta 10–14%</span>')}
-    ${kpi('✓', 'b-green', 'Sessões', `${semS.length} <span>/ 5</span>`, `<div class="progress"><i style="width:${semS.length / 5 * 100}%;background:var(--green)"></i></div>`)}
-    ${kpi('🔥', 'b-orange', 'Séries na semana', `${series} <span>séries</span>`, '<span class="tag t-blue">plano ≈ 98</span>')}
+    ${kpi('✓', 'b-green', 'Sessões', `${semS.length} <span>/ ${metaSessoes()}</span>`, `<div class="progress"><i style="width:${semS.length / metaSessoes() * 100}%;background:var(--green)"></i></div>`)}
+    ${kpi('🔥', 'b-orange', 'Séries na semana', `${series} <span>séries</span>`, `<span class="tag t-blue">plano ≈ ${seriesPlano()}</span>`)}
   </div>
   <div class="card mt"><h3>Atualizar medidas <small>peso e bioimpedância do relógio</small></h3>
     <div id="fmQ">${formMedidas(['peso_kg', 'gordura_pct', 'massa_muscular_kg', 'cintura_cm'])}</div>
     <div class="chips mt"><button class="btn" id="salvarQ">Salvar</button><a class="btn ghost" href="#treino/medicoes">Todas as medidas →</a></div>${NOTA_SYNC}</div>
-  <div class="card mt"><h3>Semana <span class="toggle"><a data-w="A" class="${S.ui.semana === 'A' ? 'on' : ''}">A · futebol seg</a><a data-w="B" class="${S.ui.semana === 'B' ? 'on' : ''}">B · futebol ter</a></span></h3>
+  <div class="card mt"><h3>Semana ${semanasDiferentes() ? `<span class="toggle"><a data-w="A" class="${S.ui.semana === 'A' ? 'on' : ''}">A · futebol seg</a><a data-w="B" class="${S.ui.semana === 'B' ? 'on' : ''}">B · futebol ter</a></span>` : ""}</h3>
     <div class="week">${m.prog.semanas[S.ui.semana].map((id, i) => `<div class="day ${id === 'futebol' ? 'fut' : ''} ${i === idx && S.ui.semana === weekType(TODAY) ? 'today' : ''} ${feitos.has(slotNome(id)) && S.ui.semana === weekType(TODAY) ? 'feito' : ''}"><b>${DIAS[i]}</b>${slotNome(id)}</div>`).join('')}</div>
-    <p class="note">Esta semana é a <b>${weekType(TODAY)}</b>. Nunca há inferiores no dia seguinte ao futebol.</p></div>
+    ${semanasDiferentes() ? `<p class="note">Esta semana é a <b>${weekType(TODAY)}</b>. Nunca há inferiores no dia seguinte ao futebol.</p>` : ""}</div>
   <div class="grid g21 mt">
     <div class="card"><h3>Registrar treino
       <select id="selS" style="width:auto">${Object.entries(m.prog.sessoes).map(([k, s]) => `<option value="${k}" ${k === S.ui.sessao ? 'selected' : ''}>${s.nome}${k === slot ? ' (hoje)' : ''}</option>`).join('')}</select></h3>
@@ -592,7 +595,7 @@ function gerenciarSupl() {
 
 function renderDieta() {
   const m = S.m, pl = m.dplano, meta = pl.metas, D = dia(), t = totaisDia(D);
-  const alim = json('30 Dieta/alimentos.json')?.alimentos || [];
+  const alim = S.alim || [];
   const bar = (v, tt, c) => `<div class="progress"><i style="width:${Math.min(100, v / tt * 100)}%;background:${c}"></i></div>`;
   const dias = Array.from({ length: 14 }, (_, i) => addDays(TODAY, i - 13));
   const hist = dias.map(x => m.diario.find(d => d.data === x) || {});
@@ -665,40 +668,261 @@ function renderDieta() {
   };
 }
 
+// ---------- nuvem (Supabase) ----------
+const SB = {
+  nome: 'Nuvem', user: null, _cache: {},
+  async list() {
+    const { data, error } = await S.sb.from('arquivos').select('path,conteudo');
+    if (error) throw new Error('Banco: ' + error.message);
+    this._cache = Object.fromEntries(data.map(r => [r.path, r.conteudo]));
+    return data.map(r => ({ path: r.path }));
+  },
+  async read(p) { return this._cache[p]; },
+  async write(p, text) { await this.writeMany([[p, text]]); return null; },
+  async writeMany(pairs) {
+    const now = new Date().toISOString();
+    for (let i = 0; i < pairs.length; i += 200) {
+      const { error } = await S.sb.from('arquivos').upsert(pairs.slice(i, i + 200).map(([path, conteudo]) => ({ user_id: this.user.id, path, conteudo, atualizado_em: now })));
+      if (error) throw new Error('Falha ao salvar: ' + error.message);
+    }
+  }
+};
+const semNav = on => document.body.classList.toggle('auth', on);
+const urlApp = () => location.origin + location.pathname;
+
+function renderLogin(msg = '') {
+  semNav(true);
+  view(`<div class="auth-box card">
+    <div class="brand-auth">🧠 Segundo Cérebro</div>
+    <p class="muted" style="margin-bottom:18px">Entre com a conta que recebeu o convite.</p>
+    ${msg ? `<p class="tag t-orange" style="margin-bottom:14px;white-space:normal">${H(msg)}</p>` : ''}
+    <div class="form" style="grid-template-columns:1fr">
+      <label class="f">E-mail<input id="lEmail" type="email" autocomplete="email"></label>
+      <label class="f">Senha<input id="lSenha" type="password" autocomplete="current-password"></label>
+    </div>
+    <button class="btn mt" id="lEntrar" style="width:100%">Entrar</button>
+    <button class="btn ghost mt" id="lGoogle" style="width:100%">Entrar com Google</button>
+    <p class="note" style="text-align:center"><a href="javascript:void 0" id="lEsqueci">Esqueci minha senha</a></p>
+    <p class="note" style="text-align:center">Acesso somente por convite.</p></div>`);
+  $('#lEntrar').onclick = async ev => {
+    ev.target.disabled = true;
+    const { error } = await S.sb.auth.signInWithPassword({ email: $('#lEmail').value.trim(), password: $('#lSenha').value });
+    if (error) { ev.target.disabled = false; toast(error.message === 'Invalid login credentials' ? 'E-mail ou senha incorretos.' : error.message); return; }
+    location.reload();
+  };
+  $('#lSenha').onkeydown = e => { if (e.key === 'Enter') $('#lEntrar').click(); };
+  $('#lGoogle').onclick = async () => {
+    const { error } = await S.sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: urlApp() } });
+    if (error) toast('Login com Google indisponível: ' + error.message);
+  };
+  $('#lEsqueci').onclick = async () => {
+    const email = $('#lEmail').value.trim(); if (!email) { toast('Digite seu e-mail primeiro.'); return; }
+    const { error } = await S.sb.auth.resetPasswordForEmail(email, { redirectTo: urlApp() });
+    toast(error ? error.message : 'Se o e-mail tiver acesso, você vai receber um link para criar nova senha.');
+  };
+}
+
+function renderNovaSenha() {
+  semNav(true);
+  view(`<div class="auth-box card"><div class="brand-auth">🧠 Segundo Cérebro</div>
+    <p class="muted" style="margin-bottom:18px">Crie sua senha de acesso (mínimo de 8 caracteres).</p>
+    <div class="form" style="grid-template-columns:1fr">
+      <label class="f">Nova senha<input id="nS1" type="password" autocomplete="new-password"></label>
+      <label class="f">Repita a senha<input id="nS2" type="password" autocomplete="new-password"></label></div>
+    <button class="btn mt" id="nSalvar" style="width:100%">Salvar senha e continuar</button></div>`);
+  $('#nSalvar').onclick = async ev => {
+    const a = $('#nS1').value, b = $('#nS2').value;
+    if (a.length < 8) { toast('Use pelo menos 8 caracteres.'); return; }
+    if (a !== b) { toast('As senhas não conferem.'); return; }
+    ev.target.disabled = true;
+    const { error } = await S.sb.auth.updateUser({ password: a });
+    if (error) { ev.target.disabled = false; toast(error.message); return; }
+    toast('Senha criada!'); boot();
+  };
+}
+
+// ---------- questionário inicial (novos usuários) ----------
+function renderOnboarding() {
+  semNav(true);
+  const chk = (id, t) => `<label class="ck"><input type="checkbox" id="${id}"> ${t}</label>`;
+  view(`<div class="auth-box card" style="max-width:760px">
+    <div class="brand-auth">🧠 Bem-vindo(a) ao Segundo Cérebro</div>
+    <p class="muted" style="margin-bottom:18px">Responda uma vez. Com isso, o app monta seu calendário de exames (por idade, sexo e histórico), suas metas de alimentação e um treino inicial. Tudo pode ser ajustado depois.</p>
+    <h3 class="sec" style="margin-top:0">Você</h3>
+    <div class="form">
+      <label class="f">Nome<input id="oNome"></label>
+      <label class="f">Data de nascimento<input id="oNasc" type="date"></label>
+      <label class="f">Sexo<select id="oSexo"><option value="masculino">Masculino</option><option value="feminino">Feminino</option></select></label>
+      <label class="f">Altura (cm)<input id="oAlt" inputmode="decimal"></label>
+      <label class="f">Peso (kg)<input id="oPeso" inputmode="decimal"></label>
+      <label class="f">Cintura (cm, opcional)<input id="oCint" inputmode="decimal"></label>
+    </div>
+    <h3 class="sec">Saúde</h3>
+    <div class="cks">${chk('oFamDM', 'Diabetes no pai, mãe ou irmãos')}${chk('oFamHAS', 'Pressão alta no pai, mãe ou irmãos')}${chk('oFamDCV', 'Infarto/AVC precoce na família')}${chk('oFamCCR', 'Câncer de intestino no pai, mãe ou irmãos')}${chk('oFuma', 'Fumo')}</div>
+    <label class="f mt">Doenças ou medicamentos atuais (opcional)<input id="oCond"></label>
+    <h3 class="sec">Treino e objetivo</h3>
+    <div class="form">
+      <label class="f">Objetivo<select id="oObj"><option value="hipertrofia">Ganhar massa muscular</option><option value="emagrecimento">Emagrecer</option><option value="saude">Saúde e condicionamento</option></select></label>
+      <label class="f">Experiência<select id="oNivel"><option value="iniciante">Iniciante (menos de 1 ano)</option><option value="intermediario" selected>Intermediário</option><option value="avancado">Avançado</option></select></label>
+      <label class="f">Dias de musculação por semana<select id="oDias"><option>3</option><option selected>4</option><option>5</option></select></label>
+    </div>
+    <button class="btn mt" id="oGerar" style="width:100%">Gerar meus planos</button>
+    <p class="note">As sugestões seguem diretrizes gerais (OMS, Ministério da Saúde, SBC, SBD, USPSTF, ISSN) e não substituem consulta médica.</p></div>`);
+  $('#oGerar').onclick = async ev => {
+    const v = id => $('#' + id).value.trim(), n = id => Number(v(id).replace(',', '.')), c = id => $('#' + id).checked;
+    const r = { nome: v('oNome'), nasc: v('oNasc'), sexo: v('oSexo'), alt: n('oAlt'), peso: n('oPeso'), cint: n('oCint') || null, famDM: c('oFamDM'), famHAS: c('oFamHAS'),
+      famDCV: c('oFamDCV'), famCCR: c('oFamCCR'), fuma: c('oFuma'), cond: v('oCond'), obj: v('oObj'), nivel: v('oNivel'), dias: +v('oDias') };
+    if (!r.nome || !isDate(r.nasc) || !(r.alt > 100 && r.alt < 230) || !(r.peso > 30 && r.peso < 300)) { toast('Preencha nome, nascimento, altura (cm) e peso (kg).'); return; }
+    ev.target.disabled = true;
+    try { await S.store.writeMany(Object.entries(await gerarPlanos(r))); toast('Planos criados!'); boot(); }
+    catch (e) { ev.target.disabled = false; toast(e.message); }
+  };
+}
+
+async function gerarPlanos(r) {
+  const idade = Math.floor(daysBetween(r.nasc, TODAY) / 365.25), imc = r.peso / ((r.alt / 100) ** 2), F = {};
+  const risco = [r.famDM && 'Diabetes na família (1º grau)', r.famHAS && 'Hipertensão na família (1º grau)', r.famDCV && 'Doença cardiovascular precoce na família',
+    r.famCCR && 'Câncer colorretal na família (1º grau)', r.fuma && 'Tabagismo', imc >= 25 && 'IMC ≥ 25', r.cond && r.cond].filter(Boolean);
+  const prot = [!r.fuma && 'Não fuma', 'Treina ' + r.dias + 'x por semana', r.cint && r.cint < (r.sexo === 'masculino' ? 94 : 80) && 'Cintura normal'].filter(Boolean);
+  F['10 Saúde/Perfil de Saúde.md'] = mkNote({ tipo: 'perfil', nome: r.nome, data_nascimento: r.nasc, sexo: r.sexo, altura_cm: r.alt, peso_kg: r.peso, circunferencia_abdominal_cm: r.cint,
+    objetivo: r.obj, nivel: r.nivel, dias_treino: r.dias, fatores_risco: risco.join('; '), fatores_protecao: prot.join('; '), atualizado_em: TODAY }, '# Perfil de Saúde\n');
+  // exames por idade, sexo e risco (diretrizes gerais)
+  const agora = addDays(TODAY, 30), ex = [];
+  const add = (nome, categoria, meses, porque, proximo = agora) => ex.push({ nome, categoria, meses, porque, proximo });
+  add('Consulta de check-up', 'consulta', 12, 'Revisão anual com clínico geral: pressão, peso, hábitos, vacinas e revisão deste plano.');
+  add('Pressão arterial', 'cardiovascular', idade >= 40 || r.famHAS || imc >= 25 ? 12 : 36, 'USPSTF 2021 e SBC 2025: anual a partir dos 40 anos ou com fatores de risco; a cada 3–5 anos nos demais.');
+  if (idade >= 35 || r.famDM || imc >= 25) add('Glicemia e hemoglobina glicada', 'metabólico', 36, 'SBD 2025: rastrear a partir dos 35 anos, ou antes com fatores de risco. Anual se der pré-diabetes.');
+  if (idade >= 20) add('Perfil lipídico', 'cardiovascular', r.famDCV ? 36 : 60, 'Colesterol e triglicerídeos para o risco cardiovascular (ACC/AHA; SBC 2025).');
+  add('Lipoproteína(a)', 'cardiovascular', null, 'SBC 2025: dosar uma vez na vida.');
+  add('Sorologias (HIV, sífilis, hepatites B e C)', 'infeccioso', null, 'Testar ao menos uma vez na vida (USPSTF; Ministério da Saúde).');
+  add('Avaliação odontológica', 'odontológico', 6, 'Prevenção de cárie e doença periodontal.');
+  add('Exame oftalmológico', 'oftalmológico', idade < 40 ? 60 : idade < 65 ? 24 : 12, 'American Academy of Ophthalmology: intervalo diminui com a idade.', idade < 40 ? addDays(TODAY, 180) : agora);
+  const abril = TODAY.slice(5) <= '04-30' ? TODAY.slice(0, 4) + '-04-30' : (+TODAY.slice(0, 4) + 1) + '-04-30';
+  add('Vacina da gripe', 'vacina', 12, 'Anual (Ministério da Saúde; SBIm).', abril);
+  if ((idade >= 45 && idade <= 75) || (r.famCCR && idade >= 40)) add('Rastreamento de câncer colorretal', 'câncer', 12, 'USPSTF 2021: dos 45 aos 75 anos (sangue oculto anual ou colonoscopia a cada 10 anos). Mais cedo com histórico familiar.');
+  if (r.sexo === 'feminino') {
+    if (idade >= 25 && idade <= 64) add('Citopatológico (Papanicolau)', 'câncer', 36, 'Ministério da Saúde/INCA: dos 25 aos 64 anos, a cada 3 anos após dois exames normais.');
+    if (idade >= 40 && idade <= 74) add('Mamografia', 'câncer', 24, 'USPSTF 2024: a cada 2 anos dos 40 aos 74 anos.');
+    if (idade >= 65) add('Densitometria óssea', 'ósseo', 24, 'USPSTF: rastrear osteoporose a partir dos 65 anos.');
+  } else if (idade >= 50 && idade <= 69) add('Conversa sobre PSA', 'câncer', 24, 'Decisão compartilhada com o médico (USPSTF 2018; SBU).');
+  ex.forEach(e => { F[`10 Saúde/Exames de rotina/${e.nome}.md`] = mkNote({ tipo: 'exame-rotina', categoria: e.categoria, periodicidade_meses: e.meses, frequencia: e.meses ? null : 'uma vez na vida', origem: 'diretriz', ultimo: null, proximo: e.proximo }, `# ${e.nome}\n\n${e.porque}\n`); });
+  F['10 Saúde/Plano de Exames.md'] = mkNote({ tipo: 'plano', atualizado_em: TODAY }, `# Plano de Exames\n\n## Próximos passos\n- [ ] Marcar consulta de check-up com clínico geral 📅 ${addDays(TODAY, 30)}\n- [ ] Conferir a carteira de vacinação 📅 ${addDays(TODAY, 30)}\n- [ ] Medir a cintura e registrar no app 📅 ${addDays(TODAY, 7)}\n`);
+  // dieta (Mifflin-St Jeor + ISSN)
+  const bmr = 10 * r.peso + 6.25 * r.alt - 5 * idade + (r.sexo === 'masculino' ? 5 : -161);
+  const kcal = Math.round(bmr * ({ 3: 1.5, 4: 1.6, 5: 1.7 }[r.dias] || 1.55) * ({ hipertrofia: 1.08, emagrecimento: 0.8, saude: 1 }[r.obj]) / 50) * 50;
+  const p = Math.round(r.peso * { hipertrofia: 2.0, emagrecimento: 2.2, saude: 1.6 }[r.obj]), g = Math.round(kcal * 0.25 / 9), c = Math.round((kcal - p * 4 - g * 9) / 4);
+  const div = [['manha', 'Lanche da manhã', .23, 'Ovos + pão ou aveia + fruta + leite/iogurte'], ['almoco', 'Almoço', .30, 'Arroz, feijão, proteína magra, salada com azeite'],
+    ['tarde', 'Lanche da tarde', .20, 'Iogurte ou whey + fruta + aveia ou pão'], ['jantar', 'Jantar', .27, 'Carboidrato + proteína + legumes e salada']];
+  F['30 Dieta/plano.json'] = JSON.stringify({ metas: { kcal, proteina: p, carboidrato: c, gordura: g, agua_l: Math.round((r.peso * 0.035 + 0.5) * 10) / 10 },
+    refeicoes: div.map(([id, nome, f, exemplo]) => ({ id, nome, kcal: Math.round(kcal * f), p: Math.round(p * f), c: Math.round(c * f), g: Math.round(g * f), exemplo })), suplementos: [] }, null, 2) + '\n';
+  // treino a partir do modelo
+  const modelo = await (await fetch('modelo-treino.json', { cache: 'no-store' })).json();
+  const todos = Object.values(modelo.sessoes).flatMap(s => s.exercicios);
+  const pick = nomes => nomes.map(n => ({ ...todos.find(e => e.nome === n) }));
+  const ses = {
+    3: { fbA: { nome: 'Corpo inteiro A', foco: 'Força e hipertrofia', exercicios: pick(['Agachamento livre', 'Supino reto com barra', 'Remada curvada com barra', 'Desenvolvimento com halteres sentado', 'Mesa flexora', 'Rosca direta com barra']) },
+      fbB: { nome: 'Corpo inteiro B', foco: 'Hipertrofia', exercicios: pick(['Levantamento terra', 'Supino inclinado com halteres', 'Puxada frontal pegada neutra', 'Leg press 45°', 'Elevação lateral na polia', 'Tríceps na polia com corda']) },
+      fbC: { nome: 'Corpo inteiro C', foco: 'Hipertrofia', exercicios: pick(['Agachamento hack', 'Supino máquina', 'Remada apoiada no peito', 'Hip thrust', 'Face pull', 'Rosca martelo', 'Panturrilha em pé']) } },
+    4: { supA: modelo.sessoes.supA, infA: modelo.sessoes.infA, infB: modelo.sessoes.infB,
+      supB: { nome: 'Superiores B', foco: 'Hipertrofia', exercicios: pick(['Supino inclinado com halteres', 'Puxada frontal pegada neutra', 'Remada apoiada no peito', 'Elevação lateral na polia', 'Rosca inclinada com halteres', 'Tríceps na polia com corda']) } },
+    5: { supA: modelo.sessoes.supA, infA: modelo.sessoes.infA, push: modelo.sessoes.push, pull: modelo.sessoes.pull, infB: modelo.sessoes.infB }
+  }[r.dias];
+  if (r.dias === 3) Object.values(ses).forEach(s => s.exercicios.forEach(e => e.series = 3));
+  if (r.nivel === 'iniciante' && r.dias !== 3) Object.values(ses).forEach(s => s.exercicios.forEach(e => { e.series = Math.max(2, e.series - 1); e.rir = '2–3'; }));
+  const semana = { 3: ['fbA', 'descanso', 'fbB', 'descanso', 'fbC', 'cardio', 'descanso'], 4: ['supA', 'infA', 'descanso', 'supB', 'infB', 'cardio', 'descanso'], 5: ['supA', 'infA', 'descanso', 'push', 'pull', 'infB', 'cardio'] }[r.dias];
+  F['20 Treino/programa.json'] = JSON.stringify({ mesociclo: 1, inicio: mondayOf(TODAY), base_semana_a: mondayOf(TODAY), semanas: { A: semana, B: semana }, sessoes: ses }, null, 2) + '\n';
+  F[`20 Treino/Medições/${TODAY} Medição.md`] = mkNote({ tipo: 'medicao', data: TODAY, peso_kg: r.peso, cintura_cm: r.cint }, `# Medição — ${TODAY}\n`);
+  return F;
+}
+
 // ---------- CONFIGURAÇÕES ----------
+const WANT_IMPORT = p => WANT.test(p.normalize('NFC'));
+async function gitBlobSha(text) {
+  const body = new TextEncoder().encode(text), head = new TextEncoder().encode('blob ' + body.length + '\0');
+  const all = new Uint8Array(head.length + body.length); all.set(head); all.set(body, head.length);
+  return [...new Uint8Array(await crypto.subtle.digest('SHA-1', all))].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function ghForm(cfg) {
+  return `<div class="form" style="grid-template-columns:1fr">
+    <label class="f">Usuário do GitHub<input id="cOwner" value="${H(cfg.owner || '')}"></label>
+    <label class="f">Repositório<input id="cRepo" value="${H(cfg.repo || '')}"></label>
+    <label class="f">Token (fine-grained, só este repositório: Contents read/write)<input id="cTok" type="password" placeholder="${cfg.token ? 'token salvo — deixe em branco para manter' : 'github_pat_…'}"></label></div>`;
+}
+function lerGhForm(cfg) {
+  const n = { owner: $('#cOwner').value.trim(), repo: $('#cRepo').value.trim(), token: $('#cTok').value.trim() || cfg.token };
+  if (!n.owner || !n.repo || !n.token) throw new Error('Preencha usuário, repositório e token.');
+  localStorage.setItem('gh', JSON.stringify(n)); GH.cfg = n; return n;
+}
 function renderConfig() {
   let cfg = {}; try { cfg = JSON.parse(localStorage.getItem('gh') || '{}'); } catch { }
+  semNav(false);
+  if (S.store === SB) {
+    view(`${header('Ajustes', 'Conta e dados.')}
+    <div class="grid g2">
+      <div class="card"><h3>Conta</h3><p>Conectado como <b>${H(SB.user.email)}</b>.</p><p class="note">Seus dados ficam na nuvem, visíveis só para você.</p>
+        <button class="btn ghost mt" id="cSair">Sair</button></div>
+      <div class="card"><h3>Vault do Obsidian (GitHub) <small>opcional</small></h3>
+        <p class="muted" style="margin-bottom:14px"><b>Importar</b> traz as notas do vault para a nuvem. <b>Exportar</b> grava na nuvem só os arquivos que mudaram no vault.</p>
+        ${ghForm(cfg)}<div class="chips mt"><button class="btn ghost" id="cImp">Importar do GitHub</button><button class="btn" id="cExp">Exportar para o GitHub</button></div></div>
+    </div>`);
+    $('#cSair').onclick = async () => { await S.sb.auth.signOut(); location.reload(); };
+    $('#cImp').onclick = ev => modal('<h3>Importar do GitHub</h3><p>Os arquivos do vault vão substituir os da nuvem que tiverem o mesmo nome. Continuar?</p>', [['Cancelar'], ['Importar', () => act(ev.target, async () => {
+      lerGhForm(cfg); const list = (await GH.list()).filter(f => WANT_IMPORT(f.path));
+      const pairs = await Promise.all(list.map(async f => [f.path.normalize('NFC'), await GH.read(f.path)]));
+      await SB.writeMany(pairs); await load();
+    }, 'Importação concluída')]]);
+    $('#cExp').onclick = ev => act(ev.target, async () => {
+      lerGhForm(cfg); const remoto = Object.fromEntries((await GH.list()).map(f => [f.path.normalize('NFC'), f]));
+      let n = 0;
+      for (const [p, f] of Object.entries(S.files)) {
+        const r = remoto[p]; if (r && r.sha === await gitBlobSha(f.text)) continue;
+        await GH.write(r ? r.path : p, f.text, r && r.sha); n++;
+      }
+      toast(n ? `${n} arquivo(s) exportado(s) para o GitHub` : 'O vault já estava atualizado');
+    });
+    return;
+  }
   const local = S.store === Local;
   view(`${header('Ajustes', 'Conexão com os dados do seu vault.')}
   <div class="card" style="max-width:640px"><h3>Fonte de dados <small>${S.store ? 'conectado: ' + S.store.nome : 'não conectado'}</small></h3>
     ${local ? '<p>Você está usando o <b>servidor local</b> no computador. Os dados são lidos e gravados direto na pasta do vault.</p>' : `
     <p class="muted" style="margin-bottom:16px">Os dados ficam no seu repositório <b>privado</b> do GitHub. O token fica salvo só neste aparelho.</p>
-    <div class="form" style="grid-template-columns:1fr">
-      <label class="f">Usuário do GitHub<input id="cOwner" value="${H(cfg.owner || '')}"></label>
-      <label class="f">Repositório<input id="cRepo" value="${H(cfg.repo || 'segundo-cerebro')}"></label>
-      <label class="f">Token (fine-grained, acesso só a este repositório: Contents read/write)<input id="cTok" type="password" placeholder="${cfg.token ? 'token salvo — deixe em branco para manter' : 'github_pat_…'}"></label>
-    </div>
-    <div class="chips mt"><button class="btn" id="cSave">Conectar</button>${cfg.token ? '<button class="btn ghost" id="cOut">Remover token deste aparelho</button>' : ''}</div>`}
+    ${ghForm(cfg)}<div class="chips mt"><button class="btn" id="cSave">Conectar</button>${cfg.token ? '<button class="btn ghost" id="cOut">Remover token deste aparelho</button>' : ''}</div>`}
   </div>`);
   if (local) return;
   $('#cSave').onclick = async ev => {
-    const n = { owner: $('#cOwner').value.trim(), repo: $('#cRepo').value.trim(), token: $('#cTok').value.trim() || cfg.token };
-    if (!n.owner || !n.repo || !n.token) { toast('Preencha usuário, repositório e token.'); return; }
-    ev.target.disabled = true; GH.cfg = n; S.store = GH;
-    try { await load(); localStorage.setItem('gh', JSON.stringify(n)); $('#modo').textContent = 'GitHub'; toast('Conectado!'); location.hash = '#inicio'; route(); }
+    ev.target.disabled = true;
+    try { lerGhForm(cfg); S.store = GH; await load(); $('#modo').textContent = 'GitHub'; toast('Conectado!'); location.hash = '#inicio'; route(); }
     catch (e) { toast(e.message); ev.target.disabled = false; S.store = null; }
   };
   if ($('#cOut')) $('#cOut').onclick = () => { localStorage.removeItem('gh'); S.store = null; S.m = null; toast('Token removido'); renderConfig(); };
 }
 
 // ---------- início ----------
+async function boot() {
+  try { await load(); } catch (e) { toast(e.message); S.m = null; renderConfig(); return; }
+  if (!S.files['10 Saúde/Perfil de Saúde.md'] && S.store === SB) { renderOnboarding(); return; }
+  semNav(false);
+  $('#modo').textContent = S.store === SB ? SB.user.email : S.store.nome;
+  const nome = S.m.perfil.nome; if (nome) { $('#nomeU').textContent = nome; $('#avU').textContent = nome[0]; }
+  if (!location.hash || location.hash === '#config') location.hash = '#inicio';
+  route();
+}
 (async function init() {
   if (window.Chart) { Chart.defaults.font.family = 'Inter'; Chart.defaults.color = C.muted; Chart.defaults.plugins.legend.labels.boxWidth = 10; Chart.defaults.maintainAspectRatio = false; }
-  try { const r = await fetch('/__list', { method: 'HEAD', cache: 'no-store' }); if (r.ok && location.hostname === 'localhost') S.store = Local; } catch { }
-  if (!S.store) { try { const cfg = JSON.parse(localStorage.getItem('gh') || 'null'); if (cfg && cfg.token) { GH.cfg = cfg; S.store = GH; } } catch { } }
+  try { S.alim = (await (await fetch('alimentos.json')).json()).alimentos; } catch { S.alim = []; }
+  const cfg = window.SC_CONFIG || {}, temSB = !!(cfg.supabaseUrl && cfg.supabaseAnonKey && window.supabase);
+  try { const r = await fetch('/__list', { method: 'HEAD', cache: 'no-store' }); if (r.ok && location.hostname === 'localhost' && (!temSB || /[?&]local/.test(location.search))) S.store = Local; } catch { }
+  if (!S.store && temSB) {
+    const tipoLink = (/type=([a-z]+)/.exec(location.hash) || [])[1], erro = (/error_description=([^&]+)/.exec(location.hash) || [])[1];
+    S.sb = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+    const { data: { session } } = await S.sb.auth.getSession();
+    if (/access_token|error/.test(location.hash)) history.replaceState(null, '', location.pathname + location.search);
+    if (!session) { renderLogin(erro ? decodeURIComponent(erro.replace(/\+/g, ' ')) : ''); return; }
+    SB.user = session.user; S.store = SB;
+    if (tipoLink === 'invite' || tipoLink === 'recovery') { renderNovaSenha(); return; }
+  }
+  if (!S.store) { try { const g = JSON.parse(localStorage.getItem('gh') || 'null'); if (g && g.token) { GH.cfg = g; S.store = GH; } } catch { } }
   if (!S.store) { $('#modo').textContent = 'não conectado'; location.hash = '#config'; renderConfig(); return; }
-  $('#modo').textContent = S.store.nome;
-  try { await load(); } catch (e) { toast(e.message); S.m = null; location.hash = '#config'; renderConfig(); return; }
-  const nome = S.m.perfil.nome; if (nome) { $('#nomeU').textContent = nome; $('#avU').textContent = nome[0]; }
-  route();
+  boot();
 })();
