@@ -135,3 +135,6 @@ body.auth .main{margin-left:0;display:flex;justify-content:center;padding-top:6v
 .brand-auth{font-size:20px;font-weight:700;margin-bottom:8px}
 .cks{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
 .ck{display:flex;gap:8px;align-items:center;font-size:13px}.ck input{width:auto}
+.side .me>div:nth-child(2){min-width:0;flex:1}
+.side .me b,.side .me small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.side .me .cfg{margin-left:0;flex:none}
