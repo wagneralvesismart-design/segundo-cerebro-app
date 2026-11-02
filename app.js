@@ -768,7 +768,9 @@ function renderOnboarding() {
       <label class="f">Dias de musculação por semana<select id="oDias"><option>3</option><option selected>4</option><option>5</option></select></label>
     </div>
     <button class="btn mt" id="oGerar" style="width:100%">Gerar meus planos</button>
+    <button class="btn ghost mt" id="oImp" style="width:100%">Já tenho dados no GitHub (vault): importar</button>
     <p class="note">As sugestões seguem diretrizes gerais (OMS, Ministério da Saúde, SBC, SBD, USPSTF, ISSN) e não substituem consulta médica.</p></div>`);
+  $('#oImp').onclick = () => { semNav(false); history.replaceState(null, '', '#config'); renderConfig(); };
   $('#oGerar').onclick = async ev => {
     const v = id => $('#' + id).value.trim(), n = id => Number(v(id).replace(',', '.')), c = id => $('#' + id).checked;
     const r = { nome: v('oNome'), nasc: v('oNasc'), sexo: v('oSexo'), alt: n('oAlt'), peso: n('oPeso'), cint: n('oCint') || null, famDM: c('oFamDM'), famHAS: c('oFamHAS'),
@@ -861,16 +863,17 @@ function renderConfig() {
     view(`${header('Ajustes', 'Conta e dados.')}
     <div class="grid g2">
       <div class="card"><h3>Conta</h3><p>Conectado como <b>${H(SB.user.email)}</b>.</p><p class="note">Seus dados ficam na nuvem, visíveis só para você.</p>
-        <button class="btn ghost mt" id="cSair">Sair</button></div>
+        <div class="chips mt"><button class="btn ghost" id="cSenha">Criar ou alterar senha</button><button class="btn ghost" id="cSair">Sair</button></div></div>
       <div class="card"><h3>Vault do Obsidian (GitHub) <small>opcional</small></h3>
         <p class="muted" style="margin-bottom:14px"><b>Importar</b> traz as notas do vault para a nuvem. <b>Exportar</b> grava na nuvem só os arquivos que mudaram no vault.</p>
         ${ghForm(cfg)}<div class="chips mt"><button class="btn ghost" id="cImp">Importar do GitHub</button><button class="btn" id="cExp">Exportar para o GitHub</button></div></div>
     </div>`);
     $('#cSair').onclick = async () => { await S.sb.auth.signOut(); location.reload(); };
+    $('#cSenha').onclick = () => renderNovaSenha(true);
     $('#cImp').onclick = ev => modal('<h3>Importar do GitHub</h3><p>Os arquivos do vault vão substituir os da nuvem que tiverem o mesmo nome. Continuar?</p>', [['Cancelar'], ['Importar', () => act(ev.target, async () => {
       lerGhForm(cfg); const list = (await GH.list()).filter(f => WANT_IMPORT(f.path));
       const pairs = await Promise.all(list.map(async f => [f.path.normalize('NFC'), await GH.read(f.path)]));
-      await SB.writeMany(pairs); await load();
+      await SB.writeMany(pairs); await load(); boot(); throw new Error('Importação concluída: ' + pairs.length + ' arquivos');
     }, 'Importação concluída')]]);
     $('#cExp').onclick = ev => act(ev.target, async () => {
       lerGhForm(cfg); const remoto = Object.fromEntries((await GH.list()).map(f => [f.path.normalize('NFC'), f]));
