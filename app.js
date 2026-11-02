@@ -722,14 +722,15 @@ function renderLogin(msg = '') {
   };
 }
 
-function renderNovaSenha() {
+function renderNovaSenha(podePular = false) {
   semNav(true);
   view(`<div class="auth-box card"><div class="brand-auth">🧠 Segundo Cérebro</div>
     <p class="muted" style="margin-bottom:18px">Crie sua senha de acesso (mínimo de 8 caracteres).</p>
     <div class="form" style="grid-template-columns:1fr">
       <label class="f">Nova senha<input id="nS1" type="password" autocomplete="new-password"></label>
       <label class="f">Repita a senha<input id="nS2" type="password" autocomplete="new-password"></label></div>
-    <button class="btn mt" id="nSalvar" style="width:100%">Salvar senha e continuar</button></div>`);
+    <button class="btn mt" id="nSalvar" style="width:100%">Salvar senha e continuar</button>${podePular ? `<button class="btn ghost mt" id="nPular" style="width:100%">Já tenho senha, pular</button>` : ""}</div>`);
+  if (podePular) $("#nPular").onclick = () => boot();
   $('#nSalvar').onclick = async ev => {
     const a = $('#nS1').value, b = $('#nS2').value;
     if (a.length < 8) { toast('Use pelo menos 8 caracteres.'); return; }
@@ -920,7 +921,7 @@ async function boot() {
     if (/access_token|error/.test(location.hash)) history.replaceState(null, '', location.pathname + location.search);
     if (!session) { renderLogin(erro ? decodeURIComponent(erro.replace(/\+/g, ' ')) : ''); return; }
     SB.user = session.user; S.store = SB;
-    if (tipoLink === 'invite' || tipoLink === 'recovery') { renderNovaSenha(); return; }
+    if (['invite', 'recovery', 'magiclink', 'signup'].includes(tipoLink)) { renderNovaSenha(tipoLink === 'magiclink'); return; }
   }
   if (!S.store) { try { const g = JSON.parse(localStorage.getItem('gh') || 'null'); if (g && g.token) { GH.cfg = g; S.store = GH; } } catch { } }
   if (!S.store) { $('#modo').textContent = 'não conectado'; location.hash = '#config'; renderConfig(); return; }
