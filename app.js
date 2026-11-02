@@ -218,6 +218,11 @@ const diaPath = d => `30 Dieta/Diário/${d}.md`;
 function dia(d = TODAY) {
   const f = S.files[diaPath(d)]; let D = null;
   if (f) { const j = /```json\r?\n([\s\S]*?)\r?\n```/.exec(f.text); try { D = j && JSON.parse(j[1]); } catch { } }
+  if (f && !D) { // formato antigo (só frontmatter): refeições do plano e suplementos como true/false
+    const o = fm(f.text);
+    D = { refeicoes: Object.fromEntries(String(o.refeicoes || '').split(',').filter(Boolean).map(id => [id, { modo: 'plano' }])), agua_l: o.agua_l || 0,
+      suplementos: (S.m.dplano?.suplementos || []).filter(s => o[s.id] === true).map(s => s.id) };
+  }
   D = D || {}; D.refeicoes = D.refeicoes || {}; D.suplementos = D.suplementos || []; D.agua_l = D.agua_l || 0;
   return D;
 }
